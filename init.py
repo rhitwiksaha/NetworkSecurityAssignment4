@@ -196,16 +196,6 @@ def divide_RNG_data_into_10_equal_subdivisions_and_count( data_file ):
     subdivisions = dict()
     for i in range(1,11):
         subdivisions[str(i)] = 0
-    # subdivisions = {  "1":  0,
-    #                   "2":  0,
-    #                   "3":  0,
-    #                   "4":  0,
-    #                   "5":  0,
-    #                   "6":  0,
-    #                   "7":  0,
-    #                   "8":  0,
-    #                   "9":  0,
-    #                   "10": 0   }
     with open(data_file, "r") as f:
         data_points = f.readlines()
 
