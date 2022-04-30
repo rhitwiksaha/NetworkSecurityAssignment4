@@ -1,129 +1,68 @@
-# roll no.- 19164007
-# OBJECTIVE:To implement any two PRNGs in a language of my choice.
-
 from itertools import islice
 import random as rnd
 import numpy as np
 
-"""
-PRNGs implemented in this file:
-1. Mersenne Twister (PyRand) - python library function
-2. Linear Congruential Generator (LCG)
-Tests performed:
-1. Chi-squared for Uniformity
-2. Kolmogorov-Smirnov Test for Uniformity
-"""
-
 def main():
-
-    test_selection = ""
-    while (test_selection != "q" ):
+    generator = ""
+    while generator != "q":
         select_test()
-        test_selection = input("Selection > ").strip()
-        if test_selection == "q":
+        generator = input(">>> ").strip()
+        if generator == "q":
             exit()
-
-        select_number_of_observations()
-        number_observations = input("Selection > ").strip()
-        number_observations = int(number_observations)
-
-        # If user selects python rand function,
-        if int(test_selection) == 1:
-            python_rand( number_observations )
-            run_test_suite(test_selection, number_observations)
-
-        # If user selects lfsr function,
-        elif int(test_selection)==2:
-            generate_lcg(number_observations)
-            run_test_suite(test_selection,number_observations)
-
+        print("How many observations should we perform?")
+        number_of_observations = input(">>> ").strip()
+        number_of_observations = int(number_of_observations)
+        if int(generator) == 1:
+            python_rand(number_of_observations)
+            run_test_suite(generator, number_of_observations)
+        elif int(generator) == 2:
+            generate_lcg(number_of_observations)
+            run_test_suite(generator, number_of_observations)
         else:
             print ("Please select a number from 1 to 2.")
 
 
-# THREE PRNGS:
-#  1.  Standard random number generator in Python(seed=123456789)
-#  2.  LCG Implementation(seed=123456789)
-#         o Where:  a=101427; c=321, m=(2**16)
-#         o Obtain each number in U[0,1) by diving X_i by m
-
-
 ###   PRNG FUNCTIONS   ###
-
-def python_rand( num_iterations ):
+def python_rand(number_of_observations):
     """
     Run the built-in python random number generator and output a number of data points
     specified by the user to a file.
     num_iterations:  The number of data points to write to file
     """
-    # Initialize seed value
-    x_value = 123456789.0
-    rnd.seed(x_value)
+    seed_value = 123456789.0
+    rnd.seed(seed_value)
+    iterator = 0
+    file_name = "py_random_output.txt"
+    output_file = open(file_name, "w")
+    while iterator < number_of_observations:
+        x_value = str(rnd.random())
+        output_file.write(x_value + "\n")
+        iterator = iterator + 1
+    output_file.close()
+    print("Successfully stored", number_of_observations, "random numbers in file named:", file_name, ".")
 
-    # counter for how many iterations we've run
-    counter = 0
-
-    # Open a file for output
-    outFile = open("py_random_output.txt", "w")
-
-    # Perform number of iterations requested by user
-    while counter < num_iterations:
-        x_value = rnd.random()
-        # Write to file
-        writeValue = str(x_value)
-        outFile.write(writeValue)
-        outFile.write("\n")
-        counter = counter + 11
-
-    outFile.close()
-    print("Successfully stored %d random numbers in file named: 'py_random_output.txt'.", num_iterations)
-
-
-def generate_lcg( num_iterations ):
+def generate_lcg(number_of_observations):
     """
     LCG - generates as many random numbers as requested by user, using a Linear Congruential Generator
     LCG uses the formula: X_(i+1) = (aX_i + c) mod m
     num_iterations: int - the number of random numbers requested
     """
-    # Initialize variables
-    x_value = 123456789.0
-    a = 101427
-    c = 321
+    x_value = 123456789.0    
+    a = 101427               
+    c = 321                  
     m = (2 ** 16)
-
-    # counter for how many iterations we've run
-    counter = 0
-
-
-    outFile = open("lgc_output.txt", "w")
-
-    #Perfom number of iterations requested by user
-    while counter < num_iterations:
+    iterator = 0
+    file_name = "lgc_output.txt"
+    output_file = open(file_name, "w")
+    while iterator < number_of_observations:
         x_value = (a * x_value + c) % m
-
-        #Obtain each number in U[0,1) by diving X_i by m
         writeValue = str(x_value/m)
-
-        # write to output file
-        outFile.write(writeValue + "\n")
-
-        counter = counter+1
-
-    outFile.close()
-    print("Successfully stored " + str(num_iterations) + " random numbers in file named: 'lgc_output.txt'.")
-
+        output_file.write(writeValue + "\n")
+        iterator = iterator + 1
+    output_file.close()
+    print("Successfully stored " + str(number_of_observations) + " random numbers in file named:" + file_name + ".")
 
 #### RANDOMONESS TESTS ####
-#### STATS TESTS #####
-    # STATISTICAL TESTS
-    # Check for uniformity at 80%, 90%, and 95% level. Note that some tests are one-sided, others two sided
-    # x 1. Chi-Square Frequency Test for Uniformity
-    #      - Collect 10,000 numbers per generation method
-    #      - Sub-divide[0.1) into 10 equal subdivisions
-    # x 2. Kolmogorov-Smirnov Test for uniformity
-    #      - Since K-S Test works better with a smaller set of numbers, you may use the first 100
-    #        out fo the 10,000 that you generated for the Chi-Square Frequency Test
-
 def chi_square_uniformity_test( data_set, confidence_level, num_samples ):
     """
     Null hypothesis:  Our numbers distributed uniformly on the interval [0, 1).
@@ -135,16 +74,11 @@ def chi_square_uniformity_test( data_set, confidence_level, num_samples ):
     """
     chi_sq_value = 0.0
     degrees_of_freedom = num_samples - 1
-
-    # We're doing 10 equal subdivisions, so need to divide our number samples by 10,\
+    # We're doing 10 equal subdivisions, so need to divide our number samples by 10
     expected_val = num_samples/10.0
-
     for observed_val in data_set:
-        chi_sq_value += ( pow((expected_val - data_set[observed_val]), 2)/expected_val )
-
+        chi_sq_value += (pow((expected_val - data_set[observed_val]), 2)/expected_val )
     return chi_sq_value
-
-
 
 def kolmogorov_smirnov_test( data_set, confidence_level, num_samples ):
     """
@@ -154,31 +88,19 @@ def kolmogorov_smirnov_test( data_set, confidence_level, num_samples ):
     :num_samples: number of samples to analyze
     :return: test statistic
     """
-    # Step 1:  Rank data from smallest to largest, such that:
     data_set.sort()
-
-    # Step 2: Compute D+ and D-
-    # D+ = max(i/N - R(i))
     d_plus = get_d_plus_value_for_KS_TEST(data_set, num_samples)
     print ("D+ VALUE ="+str(d_plus))
-
-    # D- = max(R(i) - (i -1)/n)
     d_minus = get_d_minus_value_for_KS_TEST(data_set, num_samples)
     print ("D- VALUE="+str(d_minus))
-
-    # Step 3:  Computer D = max(D+,D-)
     d_value = max(d_plus, d_minus)
     print ("D VALUE (max): "+str(d_value))
-
     print("\n\n")
-    # Step 4: Determine critical value, using table
-    # Step 5: Accept or reject Null hypothesis
     return d_value
 
 
 
 ##### Significance Tests #####
-
 def chi_sq_significance_test( chi_sq, signif_level):
     """
     Performs a significance test for df=10000, based on values calculated at:
@@ -197,16 +119,13 @@ def chi_sq_significance_test( chi_sq, signif_level):
         crit_value = 10233.7489
     else:
         print ("**Invalid Significance Level for Chi Sq***")
-
     if chi_sq > crit_value:
         result = "REJECT null hypothesis"
-
     print ("Significance Level: " + str(signif_level))
     print ("Chi Sq: " + str(chi_sq))
     print ("Crit Value: " + str(crit_value))
     print ("Result is: " + result)
     print ("....................................")
-
     return result
 
 def ks_significance_test( d_statistic, num_observations, alpha_level ):
@@ -220,8 +139,6 @@ def ks_significance_test( d_statistic, num_observations, alpha_level ):
     """
     result = "FAIL TO REJECT null hypothesis"
     critical_value = 0
-
-
     if alpha_level == 0.1:
         critical_value = 1.22/np.sqrt(num_observations)
     elif alpha_level == 0.05:
@@ -230,7 +147,6 @@ def ks_significance_test( d_statistic, num_observations, alpha_level ):
         critical_value = 1.63/np.sqrt(num_observations)
     else:
         print ("Invalid alpha level for KS test. Must be: 0.1, 0.05, or 0.01")
-
     if d_statistic > critical_value:
         result = ("REJECT null hypothesis")
     print ("Alpha Level is: " + str(alpha_level))
@@ -238,7 +154,6 @@ def ks_significance_test( d_statistic, num_observations, alpha_level ):
     print ("Critical value is: " + str(critical_value))
     print ("Result is: " + result)
     print ("............................")
-
     return result
 
 
@@ -278,23 +193,22 @@ def divide_RNG_data_into_10_equal_subdivisions_and_count( data_file ):
     :return: A dictionary with counts of how many occurrences our data had for each
     of 10 equal intervals between [0, 1). (Divided into 10ths)
     """
-    # For each of our uniformity tests, need to divide our data points in 10 equal subdivisions
-    subdivisions = {  "1":  0,
-                      "2":  0,
-                      "3":  0,
-                      "4":  0,
-                      "5":  0,
-                      "6":  0,
-                      "7":  0,
-                      "8":  0,
-                      "9":  0,
-                      "10": 0   }
+    subdivisions = dict()
+    for i in range(1,11):
+        subdivisions[str(i)] = 0
+    # subdivisions = {  "1":  0,
+    #                   "2":  0,
+    #                   "3":  0,
+    #                   "4":  0,
+    #                   "5":  0,
+    #                   "6":  0,
+    #                   "7":  0,
+    #                   "8":  0,
+    #                   "9":  0,
+    #                   "10": 0   }
     with open(data_file, "r") as f:
-        # data points is a list containing all numbers we've read in.
         data_points = f.readlines()
 
-    # Loop through our data points and count number of data points in each subdivision
-    # Divide by tenths, from 0.0 to 1.0.
     for num in data_points:
         num = float(num)
         if num < 0.1:
@@ -317,33 +231,22 @@ def divide_RNG_data_into_10_equal_subdivisions_and_count( data_file ):
             subdivisions["9"] += 1
         elif num < 1.0:
             subdivisions["10"] += 1
-
     return subdivisions
 
 
-def get_d_plus_value_for_KS_TEST( data_set, num_samples ):
+def get_d_plus_value_for_KS_TEST(data_set, num_samples):
     """
     Finds the D+ value for a KS test
     :param data_set: 100 values, must be a list of floats
     :return: the D-+Statistic for our data set
     """
-    # D+ = max(i/N - R(i))
     d_plus_max = 0
     value_rank_i = 1
-
-    # iterate through data set
     for value in data_set:
-        # Do each D+ calculation, store it
-        d_plus_i_value = ( (value_rank_i/num_samples) - value )
-
-        # Check if it is highest D+ value yet
+        d_plus_i_value = ((value_rank_i/num_samples) - value)
         if d_plus_i_value > d_plus_max:
             d_plus_max = d_plus_i_value
-
-        # increment our "i" value
         value_rank_i = value_rank_i + 1
-
-    # coming out of this loop, D+ = highest D+ value
     return d_plus_max
 
 
@@ -353,24 +256,14 @@ def get_d_minus_value_for_KS_TEST( data_set, num_samples ):
     :param data_set: 100 values, must be a list of floats
     :return: the D- Statistic for our data set
     """
-    # D- = max(R(i) - (i -1)/n)
     d_minus_max = 0
     value_rank_i = 1.0
-
-    # iterate through data set
     for value in data_set:
-        # Do each D+ calculation, store it
         substraction_value = ( (value_rank_i - 1.0)/num_samples )
         d_minus_i_value = value - substraction_value
-
-        # Check if it is highest D+ value yet
         if d_minus_i_value > d_minus_max:
             d_minus_max = d_minus_i_value
-
-        # increment our "i" value
         value_rank_i = value_rank_i + 1
-
-    # coming out of this loop, D+ = highest D+ value
     return d_minus_max
 
 def select_test():
@@ -380,16 +273,9 @@ def select_test():
     """
     print ("Please select a method for generating random numbers: ")
     print (" 1. Python's Random Function")
-    print (" 2. Linear Congruential Generator ")
+    print (" 2. Linear Congruential Generator ")  
     print ("      (or type 'q' to quit)")
     print ("")
-
-def select_number_of_observations():
-    """
-    Command line prompt to select the number of observations for a given test
-    :return: void - prints a prompt to command line
-    """
-    print ("How many observations should we perform?")
 
 
 def run_test_suite( test_selection, number_observations ):
@@ -416,8 +302,6 @@ def run_test_suite( test_selection, number_observations ):
     print ("")
     print ("TEST SUITE FOR:  %s " % (test_name))
     print ("======================================")
-
-    # divide our output values in 10 equal subdivisions and run chi-square test
     print ("---------CHI-SQ_TEST-----------")
     data_points = divide_RNG_data_into_10_equal_subdivisions_and_count(input_file)
     chi_sq_result = chi_square_uniformity_test(data_points, 0, number_observations)
@@ -426,8 +310,6 @@ def run_test_suite( test_selection, number_observations ):
     chi_sq_significance_test( chi_sq_result, 0.95 )
 
     print ("")
-
-    # get first 100 values from sample and run kolmogorov-smirnov test
     print ("---------KS_TEST-----------")
     first_100_values = collect_first_100_samples_in_data_set(input_file)
     first_100_values.sort()
